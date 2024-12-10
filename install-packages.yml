@@ -6,9 +6,6 @@
   vars:
     apache_port: 80
     php_version: "8.3"
-    db_user: "admin"
-    mysql_root_password: "password"
-    db_name: drupal10
 
   tasks:
     - name: Install Apache 2.4
@@ -38,13 +35,11 @@
       debug:
         msg: "Installed PyMySQL version: {{ pymysql_version.stdout }}"
 
-    - name: Install PHP 8.3 & mysql-servr
+    - name: Install PHP 8.3
       apt:
         name:
           - php{{ php_version }}
           - php{{ php_version }}-mysql
-          - python-mysqldb
-          - mysql-server
         state: present
 
     - name: Start Apache service
@@ -52,4 +47,18 @@
         name: apache2
         state: started
         enabled: yes
-  
+
+    - name: Installing Mysql and dependencies
+      apt:
+        name:
+        - mysql-server
+        - mysql-client 
+        - python3-mysqldb
+        - libmysqlclient-dev
+        state: present     
+    - name: start and enable mysql service
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+    
