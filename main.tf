@@ -4,14 +4,14 @@ provider "aws" {
 }
 
 # Generate SSH Key Pair for Ansible
-resource "aws_key_pair" "ansible_key" {
-  key_name   = "ansible-key"
+resource "aws_key_pair" "drupal_key" {
+  key_name   = "drupal-key"
   public_key = file("~/.ssh/id_rsa.pub")  # Make sure you have your public key in this path
 }
 
 # Security Group Configuration
 resource "aws_security_group" "allow_ssh_http" {
-  name_prefix = "allow-ssh-http-"
+  name = "allow-ssh-http"
   description = "Allow SSH and HTTP traffic"
 
   ingress {
@@ -40,11 +40,11 @@ resource "aws_security_group" "allow_ssh_http" {
 resource "aws_instance" "web_server" {
   ami             = "ami-0e2c8caa4b6378d8c"  
   instance_type   = "t2.micro"  
-  key_name        = aws_key_pair.ansible_key.key_name
+  key_name        = aws_key_pair.drupal_key.key_name
   security_groups = [aws_security_group.allow_ssh_http.name]
 
   tags = {
-    Name = "web-server"
+    Name = "drupal-server"
   }
 
   # Provisioner to run remote-exec for initial setup
@@ -93,8 +93,8 @@ resource "aws_db_instance" "default" {
   allocated_storage = 20
   storage_type      = "gp2"
   username          = "admin"
-  password          = "password"  # Use a variable for the password
-  db_name           = "mydb"
+  password          = var.db_pass  # Use a variable for the password
+  db_name           = "drupal"
   skip_final_snapshot = true
   publicly_accessible = true
   vpc_security_group_ids   = [aws_security_group.rds_sg.id]
@@ -115,5 +115,3 @@ resource "aws_db_instance" "default" {
   value = aws_db_instance.default.endpoint
 }
 
-#mysql -h my-mysql-db.cxy8ci2k6cu6.us-east-1.rds.amazonaws.com -P 3306 -u admin -p
-#mysql -h my-mysql-db.cxy8ci2k6cu6.us-east-1.rds.amazonaws.com -P 3306 -u admin -p
