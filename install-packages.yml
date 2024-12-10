@@ -1,0 +1,52 @@
+---
+- name: Provision Apache, PHP, and MySQL
+  hosts: all
+  become: true
+  vars:
+    apache_port: 80
+    mysql_root_password: "root_password"  # Update as necessary
+    php_version: "8.3"
+
+  tasks:
+    - name: Install Apache 2.4
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+    - name: Install PHP 8.3.9
+      apt:
+        name:
+          - php{{ php_version }}
+          - libapache2-mod-php
+          - php{{ php_version }}-mysql
+          - php{{ php_version }}-curl
+          - php{{ php_version }}-xml
+          - php{{ php_version }}-json
+        state: present
+
+    - name: Install MySQL 9.1.0
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: Start Apache service
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+
+    - name: Start MySQL service
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: Set MySQL root password
+      mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+        host: localhost
+        login_user: root
+        login_password: ""
+        state: present
