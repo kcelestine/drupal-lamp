@@ -73,7 +73,14 @@ resource "aws_security_group" "rds_sg" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/24"]  # Allow EC2 to connect to RDS (adjust subnet CIDR)
+    cidr_blocks = ["0.0.0.0/0"]  # Allow access to RDS from any IP address
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]  # Allow SSH access to RDS from any IP address
   }
 
   egress {
@@ -93,7 +100,7 @@ resource "aws_db_instance" "default" {
   allocated_storage = 20
   storage_type      = "gp2"
   username          = "admin"
-  password          = "your-db-password"  # Change this password
+  password          = "password"  # Use a variable for the password
   db_name           = "mydb"
   skip_final_snapshot = true
   publicly_accessible = true
@@ -103,6 +110,8 @@ resource "aws_db_instance" "default" {
     Name = "MySQL DB"
   }
 }
+
+
 
  # Outputs the public IP
   output "instance_ip" {
@@ -114,4 +123,4 @@ resource "aws_db_instance" "default" {
 }
 
 #mysql -h my-mysql-db.cxy8ci2k6cu6.us-east-1.rds.amazonaws.com -P 3306 -u admin -p
-#mysql -h db.cxy8ci2k6cu6.us-east-1.rds.amazonaws.com -P 3306 -u admin -p
+#mysql -h my-mysql-db.cxy8ci2k6cu6.us-east-1.rds.amazonaws.com -P 3306 -u admin -p
