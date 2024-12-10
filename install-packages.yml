@@ -5,7 +5,7 @@
   become: true
   vars:
     apache_port: 80
-    mysql_root_password: "root_password"  # Update as necessary
+    mysql_root_password: "password"  # Update as necessary
     php_version: "8.3"
 
   tasks:
@@ -60,11 +60,54 @@
         state: started
         enabled: yes
 
+
+    # - name: Stop MySQL
+    #   service: name=mysql state=stopped
+    # - name: set environment variables
+    #   shell: systemctl set-environment MYSQLD_OPTS="--skip-grant-tables"
+    # - name: Start MySQL
+    #   service: name=mysql state=started
+    # - name: sql query
+    #   command:  mysql -u root --execute="UPDATE mysql.user SET authentication_string = PASSWORD('toto') WHERE User = 'root' AND Host = 'localhost';"
+    # - name: sql query flush
+    #   command:  mysql -u root --execute="FLUSH PRIVILEGES"
+    # - name: Stop MySQL
+    #   service: name=mysql state=stopped
+    # - name: unset environment variables
+    #   shell: systemctl unset-environment MYSQLD_OPTS
+    # - name: Start MySQL
+    #   service: name=mysql state=started
+
     - name: Set MySQL root password
       mysql_user:
         name: root
         password: "{{ mysql_root_password }}"
         host: localhost
         login_user: root
-        login_password: ""
+        login_password: "password"
         state: present
+
+    # run in mysql
+    # SHOW VARIABLES LIKE "%version%"; 
+
+#https://serverfault.com/questions/1130682/setting-mysql-using-ansible-in-ubuntu-remote-machine
+    # - name: user setup in mysql
+    #   mysql_user:
+    #    user: root
+    #    password: password
+    #    host: web
+    #    priv: '*.*:ALL,GRANT'
+    #    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    # - name: Set the MySQL root password
+    #   mysql_user:
+    #     name: root
+    #     password: "password"  # Set the password of your choice
+    #     host: localhost
+    #     state: present
+
+
+    # - name: Ensure MySQL root password is set and MySQL service is restarted
+    #   service:
+    #     name: mysql
+    #     state: restarted
