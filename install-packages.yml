@@ -14,22 +14,33 @@
         name: apache2
         state: present
         update_cache: yes
+    - name: Ensure Python 3 is installed
+      apt:
+        name: python3
+        state: present
+
+    - name: Ensure pip for Python 3 is installed
+      apt:
+        name: python3-pip
+        state: present
+
+    - name: Install PyMySQL using pip3
+      command: python3 -m pip install PyMySQL --break-system-packages
+
+    - name: Verify PyMySQL installation
+      command: python3 -c "import pymysql; print(pymysql.__version__)"
+      register: pymysql_version
+      changed_when: false
+
+    - name: Output PyMySQL version
+      debug:
+        msg: "Installed PyMySQL version: {{ pymysql_version.stdout }}"
 
     - name: Install PHP 8.3.9
       apt:
         name:
-          - php8.3-json
-          - libapache2-mod-php
-          - php8.3
-          - php8.3-cli
-          - php8.3-fpm
-          - php8.3-mysql
-          - php8.3-xml
-          - php8.3-mbstring
-          - php8.3-curl
-          - php8.3-zip
-          - php8.3-soap
-          - php8.3-intl
+          - php{{ php_version }}
+          - php{{ php_version }}-mysql
         state: present
 
     - name: Install MySQL 9.1.0
