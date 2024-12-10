@@ -1,93 +1,24 @@
 ---
-- name: Provision Apache, PHP, and MySQL
-  hosts: all
-  gather_facts: no
-  become: true
+- hosts: web
   vars:
-    apache_port: 80
-    php_version: "8.3"
-    db_user: "admin"
-    db_pass: "password"
-    db_name: drupal10
-
+    mysql_root_password: fart
   tasks:
-    - name: Install Apache 2.4
-      apt:
-        name: apache2
-        state: present
-        update_cache: yes
-    - name: Ensure Python 3 is installed
-      apt:
-        name: python3
-        state: present
-
-    - name: Ensure pip for Python 3 is installed
-      apt:
-        name: python3-pip
-        state: present
-
-    - name: Install PyMySQL using pip3
-      command: python3 -m pip install PyMySQL --break-system-packages
-
-    - name: Verify PyMySQL installation
-      command: python3 -c "import pymysql; print(pymysql.__version__)"
-      register: pymysql_version
-      changed_when: false
-
-    - name: Output PyMySQL version
-      debug:
-        msg: "Installed PyMySQL version: {{ pymysql_version.stdout }}"
-
-    - name: Install PHP 8.3
-      apt:
-        name:
-          - php{{ php_version }}
-          - php{{ php_version }}-mysql
-        state: present
-
-    - name: Start Apache service
-      service:
-        name: apache2
-        state: started
-        enabled: yes
-
-    # run in mysql
-    # SHOW VARIABLES LIKE "%version%"; 
-
-    - name: Installing Mysql  and dependencies
-      apt:
-        name:
-          - mysql-server
-          - mysql-client 
-          - python3-mysqldb
-          - libmysqlclient-dev
-        state: present     
-    - name: start and enable mysql service
-      service:
-        name: mysql
-        state: started
-        enabled: yes
-    - name: creating mysql user (medium_post)
-      mysql_user:
-        name: "{{db_user}}"
-        password: "{{db_pass}}"
-        priv: '*.*:ALL'
-        host: '%'
-        state: present
-    - name: creating medium_db
-      mysql_db:
-        name: "{{db_name}}"
-        state: present
-    - name: Enable remote login to mysql
-      lineinfile:
-         path: /etc/mysql/mysql.conf.d/mysqld.cnf
-         regexp: '^bind-address'
-         line: 'bind-address = 0.0.0.0'
-         backup: yes
-      notify:
-         - Restart mysql
-  handlers:
-    - name: Restart mysql
-      service:
-        name: mysql
-        state: restarted
+  - name: Install MySQL
+    apt: name={{ item }} update_cache=yes cache_valid_time=3600 state=present
+    become: yes
+    with_items:
+    - python3-mysqldb
+    - mysql-server
+  - name: Start the MySQL service
+    become: yes
+    service: 
+      name: mysql 
+      state: started
+      enabled: true
+  - name: Create database user with name 'bob' and password '12345' with all database privileges
+    community.mysql.mysql_user:
+      login_user: root
+      name: bob
+      password: 12345
+      priv: '*.*:ALL'
+      state: present
