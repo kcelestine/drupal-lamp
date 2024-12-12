@@ -16,14 +16,14 @@ variable "ec2_instance_tag" {
   default = "drupal-server"
 }
 
-variable "rds_security_group_name" {
+variable "ec2_security_group_name" {
   type    = string
-  default = "rds-sg"
+  default = "drupal-sg-app"
 }
 
-variable "rds_security_group_description" {
+variable "ec2_security_group_description" {
   type    = string
-  default = "Security group for RDS instance"
+  default = "Security group for EC2 instance"
 }
 
 variable "rds_instance_type" {
@@ -36,13 +36,33 @@ variable "rds_db_name" {
   default = "drupal"
 }
 
+variable "db_pass" {
+  type = string
+}
+
 variable "rds_instance_tag" {
   type    = string
   default = "drupal-db"
 }
 
-variable "db_pass" {
-  type = string
+variable "rds_security_group_name" {
+  type    = string
+  default = "drupal-sg-data"
+}
+
+variable "rds_security_group_description" {
+  type    = string
+  default = "Security group for RDS instance"
+}
+
+variable "alb_security_group_name" {
+  type    = string
+  default = "drupal-sg-alb"
+}
+
+variable "alb_security_group_description" {
+  type    = string
+  default = "Security group for ALB"
 }
 
 variable "vpc_name" {
@@ -50,37 +70,27 @@ variable "vpc_name" {
   default = "drupal-vpc"
 }
 
-variable "public_subnet_cidr" {
-  type    = string
-  default = "10.0.1.0/24"
-}
-
-variable "subnet_az" {
+variable "subnet_az_1a" {
   type    = string
   default = "us-east-1a"
 }
 
-variable "public_tag" {
+variable "subnet_az_1b" {
   type    = string
-  default = "public-drupal"
+  default = "us-east-1b"
 }
 
-variable "private_subnet_cidr" {
+variable "public_tag" {
   type    = string
-  default = "10.0.2.0/24"
+  default = "drupal-public"
 }
 
 variable "private_tag" {
   type    = string
-  default = "private-drupal"
+  default = "drupal-private"
 }
 
-variable "private_subnet_group" {
+variable "private_subnet_group_data" {
   type    = string
-  default = "private-drupal"
-}
-
-variable "igw_tag" {
-  type    = string
-  default = "drupal-igw"
+  default = "drupal-private-data"
 }

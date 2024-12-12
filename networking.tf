@@ -1,5 +1,5 @@
 # Create a VPC
-resource "aws_vpc" "main" {
+resource "aws_vpc" "this" {
   cidr_block = "10.0.0.0/16"
 
   tags = {
@@ -8,10 +8,10 @@ resource "aws_vpc" "main" {
 }
 
 # Create Subnets
-resource "aws_subnet" "public_subnet_1a" {
-  vpc_id            = aws_vpc.main.id
+resource "aws_subnet" "public_us_east_1a" {
+  vpc_id            = aws_vpc.this.id
   cidr_block        = "10.0.1.0/24"
-  availability_zone = var.subnet_az
+  availability_zone = var.subnet_az_1a
   map_public_ip_on_launch = true
 
   tags = {
@@ -19,10 +19,10 @@ resource "aws_subnet" "public_subnet_1a" {
   }
 }
 
-resource "aws_subnet" "public_subnet_1b" {
-  vpc_id            = aws_vpc.main.id
+resource "aws_subnet" "public_us_east_1b" {
+  vpc_id            = aws_vpc.this.id
   cidr_block        = "10.0.4.0/24"
-  availability_zone = "us-east-1b"
+  availability_zone = var.subnet_az_1b
   map_public_ip_on_launch = true
 
   tags = {
@@ -30,51 +30,51 @@ resource "aws_subnet" "public_subnet_1b" {
   }
 }
 
-resource "aws_subnet" "private_subnet_1a" {
-  vpc_id            = aws_vpc.main.id
+resource "aws_subnet" "private_us_east_1a" {
+  vpc_id            = aws_vpc.this.id
   cidr_block        = "10.0.2.0/24"
-  availability_zone = var.subnet_az
+  availability_zone = var.subnet_az_1a
 
   tags = {
     Name = var.private_tag
   }
 }
 
-resource "aws_subnet" "private_subnet_1b" {
-  vpc_id            = aws_vpc.main.id
+resource "aws_subnet" "private_us_east_1b" {
+  vpc_id            = aws_vpc.this.id
   cidr_block        = "10.0.3.0/24"
-  availability_zone = "us-east-1b"
+  availability_zone = var.subnet_az_1b
 
   tags = {
     Name = var.private_tag
   }
 }
 
-resource "aws_db_subnet_group" "drupal_data_subnet_group" {
-  name       = var.private_subnet_group
-  subnet_ids = [aws_subnet.private_subnet_1a.id, aws_subnet.private_subnet_1b.id]
+resource "aws_db_subnet_group" "data" {
+  name       = var.private_subnet_group_data
+  subnet_ids = [aws_subnet.private_us_east_1a.id, aws_subnet.private_us_east_1b.id]
 
   tags = {
-    Name = var.private_subnet_group
+    Name = var.private_subnet_group_data
   }
 }
 
 # Create Internet Gateway
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.main.id
+resource "aws_internet_gateway" "this" {
+  vpc_id = aws_vpc.this.id
 
   tags = {
-    Name = var.igw_tag
+    Name = var.public_tag
   }
 }
 
 # Create Route Tables
 resource "aws_route_table" "public_route_table" {
-  vpc_id = aws_vpc.main.id
+  vpc_id = aws_vpc.this.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.this.id
   }
 
   tags = {
@@ -83,7 +83,7 @@ resource "aws_route_table" "public_route_table" {
 }
 
 resource "aws_route_table" "private_route_table" {
-  vpc_id = aws_vpc.main.id
+  vpc_id = aws_vpc.this.id
 
   tags = {
     Name = var.private_tag
@@ -92,18 +92,19 @@ resource "aws_route_table" "private_route_table" {
 
 # Associate Subnets with Route Tables
 resource "aws_route_table_association" "public_subnet_association" {
-  subnet_id      = aws_subnet.public_subnet_1a.id
+  subnet_id      = aws_subnet.public_us_east_1a.id
   route_table_id = aws_route_table.public_route_table.id
 }
 
 resource "aws_route_table_association" "private_subnet_association" {
-  subnet_id      = aws_subnet.private_subnet_1a.id
+  subnet_id      = aws_subnet.private_us_east_1a.id
   route_table_id = aws_route_table.private_route_table.id
 }
 
-resource "aws_security_group" "alb_sg" {
-  name = "drupal-alb-sg"
-  vpc_id      = aws_vpc.main.id
+resource "aws_security_group" "alb" {
+  name        = var.alb_security_group_name
+  description = var.alb_security_group_description
+  vpc_id      = aws_vpc.this.id
 
   egress {
     cidr_blocks = ["0.0.0.0/0"]
@@ -128,10 +129,10 @@ resource "aws_security_group" "alb_sg" {
 }
 
 # Security Group for EC2 Instance
-resource "aws_security_group" "allow_ssh_http" {
-  name        = "allow-ssh-http"
-  description = "Allow SSH and HTTP traffic"
-  vpc_id = aws_vpc.main.id
+resource "aws_security_group" "ec2" {
+  name        = var.ec2_security_group_name
+  description = var.ec2_security_group_description
+  vpc_id = aws_vpc.this.id
 
   ingress {
     from_port   = 22
@@ -144,7 +145,7 @@ resource "aws_security_group" "allow_ssh_http" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    security_groups = [aws_security_group.alb_sg.id]
+    security_groups = [aws_security_group.alb.id]
   }
 
 
@@ -157,16 +158,16 @@ resource "aws_security_group" "allow_ssh_http" {
 }
 
 # Security Group for RDS instance
-resource "aws_security_group" "rds_sg" {
+resource "aws_security_group" "rds" {
   name        = var.rds_security_group_name
   description = var.rds_security_group_description
-  vpc_id = aws_vpc.main.id
+  vpc_id = aws_vpc.this.id
 
   ingress {
     from_port = 3306
     to_port   = 3306
     protocol  = "tcp"
-    security_groups = [aws_security_group.allow_ssh_http.id]
+    security_groups = [aws_security_group.ec2.id]
   }
 
   egress {

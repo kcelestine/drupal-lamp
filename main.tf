@@ -45,12 +45,12 @@ data "aws_ami" "ubuntu" {
 }
 
 # EC2 Instance Configuration
-resource "aws_instance" "web_server" {
+resource "aws_instance" "this" {
   ami             = data.aws_ami.ubuntu.id
   instance_type   = var.ec2_instance_type
   key_name        = var.aws_ec2_key
-  vpc_security_group_ids = [aws_security_group.allow_ssh_http.id]
-  subnet_id       = aws_subnet.public_subnet_1a.id
+  vpc_security_group_ids = [aws_security_group.ec2.id]
+  subnet_id       = aws_subnet.public_us_east_1a.id
 
   tags = {
     Name = var.ec2_instance_tag
@@ -62,7 +62,7 @@ resource "random_id" "unique_id" {
 }
 
 # Create an RDS instance (MySQL)
-resource "aws_db_instance" "drupal_rds" {
+resource "aws_db_instance" "this" {
   identifier             = "drupal-db-${random_id.unique_id.hex}"
   engine                 = "mysql"
   engine_version         = "8.0"
@@ -74,8 +74,8 @@ resource "aws_db_instance" "drupal_rds" {
   db_name                = var.rds_db_name
   skip_final_snapshot    = true
   publicly_accessible    = false
-  vpc_security_group_ids = [aws_security_group.rds_sg.id]
-  db_subnet_group_name   = aws_db_subnet_group.drupal_data_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.rds.id]
+  db_subnet_group_name   = aws_db_subnet_group.data.name
 
   tags = {
     Name = var.rds_instance_tag
@@ -83,12 +83,12 @@ resource "aws_db_instance" "drupal_rds" {
 }
 
 # Application Load Balancer (ALB)
-resource "aws_lb" "drupal_alb" {
+resource "aws_lb" "this" {
   name               = "drupal-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups   = [aws_security_group.alb_sg.id]
-  subnets            = [aws_subnet.public_subnet_1a.id, aws_subnet.public_subnet_1b.id]
+  security_groups   = [aws_security_group.alb.id]
+  subnets            = [aws_subnet.public_us_east_1a.id, aws_subnet.public_us_east_1a.id]
 
   enable_deletion_protection = false
   enable_http2               = true
@@ -99,11 +99,11 @@ resource "aws_lb" "drupal_alb" {
 }
 
 # Step 6: Create a Target Group for the EC2 instance
-resource "aws_lb_target_group" "drupal_tg" {
+resource "aws_lb_target_group" "this" {
   name     = "drupal-target-group"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
+  vpc_id   = aws_vpc.this.id
 
   health_check {
     path                = "/"
@@ -119,23 +119,23 @@ resource "aws_lb_target_group" "drupal_tg" {
   }
 }
 
-# Step 7: Register EC2 instance with the Target Group
+# Register EC2 instance with the Target Group
 # does this mean the traffic between the ec2 and alb or people trying to connect to alb too?
 # see if I should keep this when I got to https
-resource "aws_lb_target_group_attachment" "example" {
-  target_group_arn = aws_lb_target_group.drupal_tg.arn
-  target_id        = aws_instance.web_server.id
+resource "aws_lb_target_group_attachment" "this" {
+  target_group_arn = aws_lb_target_group.this.arn
+  target_id        = aws_instance.this.id
   port             = 80
 }
 
-# Step 8: Create an ALB Listener
+# ALB Listener
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.drupal_alb.arn
+  load_balancer_arn = aws_lb.this.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.drupal_tg.arn
+    target_group_arn = aws_lb_target_group.this.arn
   }
 }
