@@ -23,24 +23,24 @@
         name: python3-pip
         state: present
 
-    - name: Install PyMySQL using pip3
-      command: python3 -m pip install PyMySQL --break-system-packages
+    # - name: Install PyMySQL using pip3
+    #   command: python3 -m pip install PyMySQL --break-system-packages
 
-    - name: Verify PyMySQL installation
-      command: python3 -c "import pymysql; print(pymysql.__version__)"
-      register: pymysql_version
-      changed_when: false
+    # - name: Verify PyMySQL installation
+    #   command: python3 -c "import pymysql; print(pymysql.__version__)"
+    #   register: pymysql_version
+    #   changed_when: false
 
-    - name: Output PyMySQL version
-      debug:
-        msg: "Installed PyMySQL version: {{ pymysql_version.stdout }}"
+    # - name: Output PyMySQL version
+    #   debug:
+    #     msg: "Installed PyMySQL version: {{ pymysql_version.stdout }}"
 
-    - name: Install PHP 8.3
-      apt:
-        name:
-          - php{{ php_version }}
-          - php{{ php_version }}-mysql
-        state: present
+    # - name: Install PHP 8.3
+    #   apt:
+    #     name:
+    #       - php{{ php_version }}
+    #       - php{{ php_version }}-mysql
+    #     state: present
 
     - name: Start Apache service
       service:
