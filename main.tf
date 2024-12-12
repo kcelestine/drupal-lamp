@@ -24,40 +24,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# Security Group for EC2 Instance
-resource "aws_security_group" "allow_ssh_http" {
-  name        = "allow-ssh-http"
-  description = "Allow SSH and HTTP traffic"
-  vpc_id = aws_vpc.main.id
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [var.my_ip]
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
 
 # Data Source for Latest Ubuntu 24 AMI
 data "aws_ami" "ubuntu" {
@@ -87,28 +54,6 @@ resource "aws_instance" "web_server" {
 
   tags = {
     Name = var.ec2_instance_tag
-  }
-}
-
-# Security Group for RDS instance
-resource "aws_security_group" "rds_sg" {
-  name        = var.rds_security_group_name
-  description = var.rds_security_group_description
-  vpc_id = aws_vpc.main.id
-
-  ingress {
-    from_port = 3306
-    to_port   = 3306
-    protocol  = "tcp"
-    #cidr_blocks = ["0.0.0.0/0"]  # Allow access to RDS from any IP address
-    security_groups = [aws_security_group.allow_ssh_http.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
