@@ -62,7 +62,7 @@ resource "random_id" "unique_id" {
 }
 
 # Create an RDS instance (MySQL)
-resource "aws_db_instance" "default" {
+resource "aws_db_instance" "drupal_rds" {
   identifier             = "drupal-db-${random_id.unique_id.hex}"
   engine                 = "mysql"
   engine_version         = "8.0"
@@ -82,4 +82,60 @@ resource "aws_db_instance" "default" {
   }
 }
 
+# Application Load Balancer (ALB)
+resource "aws_lb" "drupal_alb" {
+  name               = "drupal-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups   = [aws_security_group.alb_sg.id]
+  subnets            = [aws_subnet.public_subnet_1a.id, aws_subnet.public_subnet_1b.id]
 
+  enable_deletion_protection = false
+  enable_http2               = true
+
+  tags = {
+    Name = "drupal-alb"
+  }
+}
+
+# Step 6: Create a Target Group for the EC2 instance
+resource "aws_lb_target_group" "drupal_tg" {
+  name     = "drupal-target-group"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.main.id
+
+  health_check {
+    path                = "/"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    protocol            = "HTTP"
+  }
+
+  tags = {
+    Name = "drupal-target-group"
+  }
+}
+
+# Step 7: Register EC2 instance with the Target Group
+# does this mean the traffic between the ec2 and alb or people trying to connect to alb too?
+# see if I should keep this when I got to https
+resource "aws_lb_target_group_attachment" "example" {
+  target_group_arn = aws_lb_target_group.drupal_tg.arn
+  target_id        = aws_instance.web_server.id
+  port             = 80
+}
+
+# Step 8: Create an ALB Listener
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.drupal_alb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.drupal_tg.arn
+  }
+}
