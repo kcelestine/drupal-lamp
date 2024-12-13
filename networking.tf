@@ -69,7 +69,7 @@ resource "aws_internet_gateway" "this" {
 }
 
 # Create Route Tables
-resource "aws_route_table" "public_route_table" {
+resource "aws_route_table" "public" {
   vpc_id = aws_vpc.this.id
 
   route {
@@ -82,7 +82,7 @@ resource "aws_route_table" "public_route_table" {
   }
 }
 
-resource "aws_route_table" "private_route_table" {
+resource "aws_route_table" "private" {
   vpc_id = aws_vpc.this.id
 
   tags = {
@@ -91,14 +91,14 @@ resource "aws_route_table" "private_route_table" {
 }
 
 # Associate Subnets with Route Tables
-resource "aws_route_table_association" "public_subnet_association" {
+resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public_us_east_1a.id
-  route_table_id = aws_route_table.public_route_table.id
+  route_table_id = aws_route_table.public.id
 }
 
-resource "aws_route_table_association" "private_subnet_association" {
+resource "aws_route_table_association" "private" {
   subnet_id      = aws_subnet.private_us_east_1a.id
-  route_table_id = aws_route_table.private_route_table.id
+  route_table_id = aws_route_table.private.id
 }
 
 resource "aws_security_group" "alb" {
