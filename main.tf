@@ -88,7 +88,7 @@ resource "aws_lb" "this" {
   internal           = false
   load_balancer_type = "application"
   security_groups   = [aws_security_group.alb.id]
-  subnets            = [aws_subnet.public_us_east_1a.id, aws_subnet.public_us_east_1a.id]
+  subnets            = [aws_subnet.public_us_east_1a.id, aws_subnet.public_us_east_1b.id]
 
   enable_deletion_protection = false
   enable_http2               = true
