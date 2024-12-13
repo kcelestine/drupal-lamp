@@ -18,7 +18,7 @@ jobs:
 
     # Download the EC2 public IP from the previous workflow's artifact
     - name: Download EC2 Public IP
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: ec2_public_ip
         path: ./artifact
