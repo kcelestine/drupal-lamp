@@ -15,6 +15,15 @@ terraform {
     }
   }
 
+    backend "s3" {
+    bucket         = "khadijah-terraform-state-bucket"  # Your S3 bucket name
+    key            = "terraform/state.tfstate"    # Path within the S3 bucket to store the state file
+    region         = "us-east-1"                   # The region where the S3 bucket is located
+    encrypt        = true                          # Encrypt the state file using SSE-S3
+    dynamodb_table = "terraform-lock"              # DynamoDB table for state locking
+    acl            = "bucket-owner-full-control"   # Set ACL for the state file
+  }
+
 }
 
 provider "random" {}
