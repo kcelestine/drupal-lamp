@@ -39,7 +39,7 @@ jobs:
 
     # Run Terraform Apply
     - name: Terraform Apply
-      run: terraform apply -var 'aws_ec2_key=${{ secrets.aws_ec2_key }}' -var 'db_pass=${{ secrets.db_pass }}' -var 'my_ip=${{ secrets.my_ip }}'
+      run: terraform apply -var 'aws_ec2_key=${{ secrets.aws_ec2_key }}' -var 'db_pass=${{ secrets.db_pass }}' -var 'my_ip=${{ secrets.my_ip }}' --auto-approve
 
     # Output EC2 public IP and store it as an artifact
     - name: Save EC2 Public IP
