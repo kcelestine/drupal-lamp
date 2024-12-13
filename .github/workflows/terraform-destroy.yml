@@ -1,0 +1,32 @@
+name: Terraform Destroy EC2
+
+on:
+  workflow_dispatch: 
+
+jobs:
+  terraform-apply:
+    name: Terraform Destroy EC2 instance
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Set up Terraform
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.10.1  # Specify the Terraform version
+
+    # Configure AWS credentials
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    # Run Terraform Destroy
+    - name: Terraform Destroy
+      run: terraform destroy -var 'aws_ec2_key=${{ secrets.aws_ec2_key }}' -var 'db_pass=${{ secrets.db_pass }}' -var 'my_ip=${{ secrets.my_ip }}' 
