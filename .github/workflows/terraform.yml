@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-
+      EC2_PUBLIC_IP:
     steps:
     # Checkout the repository
     - name: Checkout code
