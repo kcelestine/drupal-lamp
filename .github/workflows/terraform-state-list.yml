@@ -31,6 +31,10 @@ jobs:
     - name: Terraform Init
       run: terraform init
 
-    # Run Terraform Destroy
+    # Run Terraform State List
     - name: Terraform State List
       run: terraform state list
+
+    # Run Terraform Output
+    - name: Terraform Output
+      run: terraform output
