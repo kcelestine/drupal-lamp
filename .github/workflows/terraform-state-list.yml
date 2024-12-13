@@ -5,7 +5,7 @@ on:
 
 jobs:
   terraform-apply:
-    name: Terraform Destroy EC2 instance
+    name: Terraform State List 
     runs-on: ubuntu-latest
 
     steps:

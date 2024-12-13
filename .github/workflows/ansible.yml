@@ -1,8 +1,8 @@
-name: Ansible Configuration EC2
+name: Ansible Configuration
 
 on:
   workflow_run:
-    workflows: ["Terraform Provision EC2"]
+    workflows: ["Terraform Provision"]
     types:
       - completed  # Triggered after Terraform workflow completes
 

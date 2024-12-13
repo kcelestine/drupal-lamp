@@ -1,11 +1,11 @@
-name: Terraform Destroy EC2
+name: Terraform Destroy
 
 on:
   workflow_dispatch: 
 
 jobs:
   terraform-apply:
-    name: Terraform Destroy EC2 instance
+    name: Terraform Destroy
     runs-on: ubuntu-latest
 
     steps:
@@ -26,7 +26,7 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
-        
+
     # Initialize Terraform
     - name: Terraform Init
       run: terraform init
