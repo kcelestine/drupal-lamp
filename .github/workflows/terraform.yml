@@ -1,0 +1,56 @@
+name: Terraform Provision EC2
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the main branch
+
+jobs:
+  terraform-apply:
+    name: Terraform Apply to provision EC2 instance
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Set up Terraform
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 1.10.1  # Specify the Terraform version
+
+    # Configure AWS credentials
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws_region: ${{ secrets.AWS_REGION }}
+
+    # Initialize Terraform
+    - name: Terraform Init
+      run: terraform init
+
+    # Run Terraform Plan
+    - name: Terraform Plan
+      run: terraform plan
+
+    # Run Terraform Apply
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+
+    # Output EC2 public IP and store it as an artifact
+    - name: Save EC2 Public IP
+      id: terraform_output
+      run: |
+        echo "EC2 Public IP=$(terraform output -raw ec2_public_ip)" >> $GITHUB_ENV
+        echo "${{ env.EC2_PUBLIC_IP }}" > ec2_public_ip.txt
+
+    # Upload the EC2 public IP as an artifact for the next job
+    - name: Upload EC2 Public IP
+      uses: actions/upload-artifact@v2
+      with:
+        name: ec2_public_ip
+        path: ec2_public_ip.txt
