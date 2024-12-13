@@ -3,7 +3,7 @@ name: Terraform Provision
 on:
   push:
     branches:
-      - main  # Trigger on push to the main branch
+      - main
 
 jobs:
   terraform-apply:
