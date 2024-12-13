@@ -33,4 +33,4 @@ jobs:
 
     # Run Terraform Destroy
     - name: Terraform Destroy
-      run: terraform destroy -var 'aws_ec2_key=${{ secrets.aws_ec2_key }}' -var 'db_pass=${{ secrets.db_pass }}' -var 'my_ip=${{ secrets.my_ip }}' 
+      run: terraform destroy -var 'aws_ec2_key=${{ secrets.aws_ec2_key }}' -var 'db_pass=${{ secrets.db_pass }}' -var 'my_ip=${{ secrets.my_ip }}' --auto-approve 
