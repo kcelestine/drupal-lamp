@@ -9,9 +9,9 @@ resource "aws_vpc" "this" {
 
 # Create Subnets
 resource "aws_subnet" "public_us_east_1a" {
-  vpc_id            = aws_vpc.this.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = var.subnet_az_1a
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = var.subnet_az_1a
   map_public_ip_on_launch = true
 
   tags = {
@@ -20,9 +20,9 @@ resource "aws_subnet" "public_us_east_1a" {
 }
 
 resource "aws_subnet" "public_us_east_1b" {
-  vpc_id            = aws_vpc.this.id
-  cidr_block        = "10.0.4.0/24"
-  availability_zone = var.subnet_az_1b
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = "10.0.4.0/24"
+  availability_zone       = var.subnet_az_1b
   map_public_ip_on_launch = true
 
   tags = {
@@ -132,7 +132,7 @@ resource "aws_security_group" "alb" {
 resource "aws_security_group" "ec2" {
   name        = var.ec2_security_group_name
   description = var.ec2_security_group_description
-  vpc_id = aws_vpc.this.id
+  vpc_id      = aws_vpc.this.id
 
   ingress {
     from_port   = 22
@@ -142,9 +142,9 @@ resource "aws_security_group" "ec2" {
   }
 
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
     security_groups = [aws_security_group.alb.id]
   }
 
@@ -161,12 +161,12 @@ resource "aws_security_group" "ec2" {
 resource "aws_security_group" "rds" {
   name        = var.rds_security_group_name
   description = var.rds_security_group_description
-  vpc_id = aws_vpc.this.id
+  vpc_id      = aws_vpc.this.id
 
   ingress {
-    from_port = 3306
-    to_port   = 3306
-    protocol  = "tcp"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
     security_groups = [aws_security_group.ec2.id]
   }
 

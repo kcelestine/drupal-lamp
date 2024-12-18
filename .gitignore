@@ -38,3 +38,4 @@ terraform.rc
 
 # others
 inventory.ini
+.DS_Store

@@ -15,13 +15,11 @@ terraform {
     }
   }
 
-    backend "s3" {
-    bucket         = "khadijah-terraform-state-bucket"  # Your S3 bucket name
-    key            = "terraform/state.tfstate"    # Path within the S3 bucket to store the state file
-    region         = "us-east-1"                   # The region where the S3 bucket is located
-    encrypt        = true                          # Encrypt the state file using SSE-S3
-    dynamodb_table = "terraform-lock"              # DynamoDB table for state locking
-    acl            = "bucket-owner-full-control"   # Set ACL for the state file
+  backend "s3" {                                 # Path within the S3 bucket to store the state file
+    region         = "us-east-1"                 # The region where the S3 bucket is located
+    encrypt        = true                        # Encrypt the state file using SSE-S3
+    dynamodb_table = "terraform-lock"            # DynamoDB table for state locking
+    acl            = "bucket-owner-full-control" # Set ACL for the state file
   }
 
 }
@@ -33,7 +31,9 @@ provider "aws" {
   region = "us-east-1"
 }
 
-
+module = "drupal_vpc" {
+  source = "../modules/networking"
+}
 
 # Data Source for Latest Ubuntu 24 AMI
 data "aws_ami" "ubuntu" {
@@ -55,11 +55,11 @@ data "aws_ami" "ubuntu" {
 
 # EC2 Instance Configuration
 resource "aws_instance" "this" {
-  ami             = data.aws_ami.ubuntu.id
-  instance_type   = var.ec2_instance_type
-  key_name        = var.aws_ec2_key
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = var.ec2_instance_type
+  key_name               = var.aws_ec2_key
   vpc_security_group_ids = [aws_security_group.ec2.id]
-  subnet_id       = aws_subnet.public_us_east_1a.id
+  subnet_id              = aws_subnet.public_us_east_1a.id
 
   tags = {
     Name = var.ec2_instance_tag
@@ -93,23 +93,23 @@ resource "aws_db_instance" "this" {
 
 # Application Load Balancer (ALB)
 resource "aws_lb" "this" {
-  name               = "drupal-alb"
+  name               = var.alb_name
   internal           = false
   load_balancer_type = "application"
-  security_groups   = [aws_security_group.alb.id]
+  security_groups    = [aws_security_group.alb.id]
   subnets            = [aws_subnet.public_us_east_1a.id, aws_subnet.public_us_east_1b.id]
 
   enable_deletion_protection = false
   enable_http2               = true
 
   tags = {
-    Name = "drupal-alb"
+    Name = var.alb_name
   }
 }
 
 # Step 6: Create a Target Group for the EC2 instance
 resource "aws_lb_target_group" "this" {
-  name     = "drupal-target-group"
+  name     = var.tg_name
   port     = 80
   protocol = "HTTP"
   vpc_id   = aws_vpc.this.id
@@ -124,13 +124,11 @@ resource "aws_lb_target_group" "this" {
   }
 
   tags = {
-    Name = "drupal-target-group"
+    Name = var.tg_name
   }
 }
 
 # Register EC2 instance with the Target Group
-# does this mean the traffic between the ec2 and alb or people trying to connect to alb too?
-# see if I should keep this when I got to https
 resource "aws_lb_target_group_attachment" "this" {
   target_group_arn = aws_lb_target_group.this.arn
   target_id        = aws_instance.this.id

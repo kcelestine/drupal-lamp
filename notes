@@ -1,0 +1,15 @@
+EC2s not to live on Public Subnets
+
+App Load Balancer in public subnet with App EC2 in private subnets as targets.
+
+App should ideally be in Auto Scaling Group if possible in private "App" subnet.
+
+DB should be in private "Data" subnet.
+
+Security group is up to you but my general rule of thumb:
+
+App LB: Only allow 443 inbound (or whatever port you want) only allow LB to talk to Security group of App EC2
+
+App EC2:. Security group allows ports you need from App LB and maybe some other private IP space, if needed. App EC2 can also talk to it's own Security Group on needed ports. Can also talk to DB Security group on DB port, and NAT GW if needed
+
+DB: Security group only allows inbound from EC2 App
